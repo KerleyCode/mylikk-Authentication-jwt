@@ -1,3 +1,5 @@
+import { symbol } from "prop-types";
+
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
@@ -19,6 +21,50 @@ const getState = ({ getStore, getActions, setStore }) => {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
+			},
+// we moved 
+
+			syncTokenFromSessionStore: () => {
+				const sessionToken = sessionStorage.getItem('token');
+				console.log("Application just loaded). Syncing the sessionStorage token.")
+				if (sessionToken && sessionToken !== "" && sessionToken !== undefined) {
+					setStore({token: sessionToken})
+				}
+			},
+
+
+
+
+			login: async (email, password) => {
+				const options = {
+					method: 'POST',
+					mode: 'cors',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						email: email, 
+						password: password
+					}),
+				}
+				
+				const response = await fetch('https://orange-space-eureka-r47gxggwp9w5c5v4j-3001.app.github.dev/api.token', options)
+
+				if(!response.ok) {
+					console.log("error: ", response.status, response.statusText)
+					return false;
+				}
+
+				const data = await response.json();
+				sessionStorage.setItem("token", data.access_token)
+				setStore({token: data.access_token})
+				return true;
+			},
+
+			logout: () => {
+				sessionStorage.removeItem("token")
+				sessionStorage({token: null})
+				console.log("You've been logged out")
 			},
 
 			getMessage: async () => {
